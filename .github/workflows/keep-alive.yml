@@ -1,0 +1,2 @@
+- name: Workflow Keepalive
+  uses: liskin/gh-workflow-keepalive@v1.2.1

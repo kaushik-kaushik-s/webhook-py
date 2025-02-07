@@ -1,0 +1,45 @@
+name: Process Support Emails
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  workflow_dispatch:        # Allows manual triggering
+
+jobs:
+  process-emails:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    
+    - name: Debug Environment
+      run: |
+        echo "Python version:"
+        python --version
+        echo "Pip version:"
+        pip --version
+        echo "Checking required environment variables (sanitized):"
+        if [ -n "${{ secrets.EMAIL }}" ]; then echo "EMAIL is set"; else echo "EMAIL is not set"; fi
+        if [ -n "${{ secrets.EMAIL_PASSWORD }}" ]; then echo "EMAIL_PASSWORD is set"; else echo "EMAIL_PASSWORD is not set"; fi
+        if [ -n "${{ secrets.WEBHOOK_URL }}" ]; then echo "WEBHOOK_URL is set"; else echo "WEBHOOK_URL is not set"; fi
+        if [ -n "${{ secrets.IMAP_SERVER }}" ]; then echo "IMAP_SERVER is set"; else echo "IMAP_SERVER is not set"; fi
+    
+    - name: Process emails
+      env:
+        EMAIL: ${{ secrets.EMAIL }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        IMAP_SERVER: ${{ secrets.IMAP_SERVER }}
+      run: |
+        echo "Starting email processor..."
+        python email_processor.py
